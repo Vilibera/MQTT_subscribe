@@ -1,0 +1,1 @@
+void curl_message(char *recipient,struct sender *sen, char *message);

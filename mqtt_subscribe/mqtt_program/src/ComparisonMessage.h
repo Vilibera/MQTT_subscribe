@@ -1,0 +1,1 @@
+void uci_Check_Type(struct topic *topic, struct sender *sender, char *messageValue);
