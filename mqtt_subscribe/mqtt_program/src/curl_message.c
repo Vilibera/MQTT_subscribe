@@ -42,10 +42,10 @@ void getUrl(char *ip, char *port , char **ptr){
 
 	if(port != NULL || ip != NULL){
 		sprintf(url, "smtp://%s:%s",ip, port);
-		// checkaddress = strstr(url, "smtp:/");
-		// if(!checkaddress){
-		// 	sprintf(url, "smtp://%s:%s", ip, port);
-		// }
+		checkaddress = strstr(url, "smtp:/");
+		if(!checkaddress){
+			sprintf(url, "smtp://%s:%s", ip, port);
+		}
 	}
 	else{
 		syslog(LOG_ERR,"Wrong url address");
@@ -80,27 +80,20 @@ void curl_message(char *recipient,struct sender *sen, char *message)
 		curl_easy_setopt(curl, CURLOPT_URL, url);
 		curl_easy_setopt(curl, CURLOPT_MAIL_FROM, sen->email );
  	
-
-
 		recipients = curl_slist_append(recipients,recipient);
 		curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, recipients);
 
-	
 		curl_easy_setopt(curl, CURLOPT_READFUNCTION, payload_source);
 		curl_easy_setopt(curl, CURLOPT_READDATA, &upload_ctx);
 		curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-
-		
 
 		curl_easy_setopt(curl, CURLOPT_USERNAME, sen->username);
 		curl_easy_setopt(curl, CURLOPT_PASSWORD, sen->password);
 
 		CURLcode ret = curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, error);
-
-		
+	
 		res = curl_easy_perform(curl);
 		if(res != CURLE_OK){
-			syslog(LOG_ERR,"curl_easy_perform() failed: %s", curl_easy_strerror(res));
 			size_t len = strlen(errbuf);
    			syslog(LOG_ERR, "\nlibcurl: (%d) ", res);
     		if(len)

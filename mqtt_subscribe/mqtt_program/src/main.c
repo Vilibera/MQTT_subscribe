@@ -71,10 +71,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
 
 void sigHandler(int signo) 
 {
-	// struct mosquitto *mosq;
-	// mqtt_disconnect(mosq);
 	syslog(LOG_INFO,"Program is closing...");
-	// syslog(LOG_ERR, "Error info: %s", curl_easy_strerror(signo));
 	closelogs(signo);
 }
 

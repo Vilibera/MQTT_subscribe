@@ -54,10 +54,8 @@ void Uci_string_Comparison_Check(char *messageValue, struct topic *topic, struct
 				break;
 
 			default:
-					syslog(LOG_ERR, "Wrong type specified(EQUAL - NOT_EQUAL)");
-				break;
-				
-			
+					syslog(LOG_ERR, "Wrong comparison for string type available only(EQUAL - NOT_EQUAL)");
+				break;	
 		}
 }
 
@@ -153,7 +151,7 @@ void uci_Check_Type(struct topic *topic, struct sender *sender, char *messageVal
 		break;
 
 		default:
-			syslog(LOG_ERR, "Wrong type specified(STRING OR DECIMAL)");
+			syslog(LOG_ERR, "Wrong type available only(STRING OR DECIMAL)");
 		break;
 	}
 }
