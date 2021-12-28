@@ -9,23 +9,26 @@
 #include "StructCurlMessage.h"
 #include "curl_message.h"
 
-char comp[10];
-char message[1024];
-void curl_string_message_format(struct topic *topic,struct sender *sender,char *messageValue,char *comp)
-{
 
-	syslog(LOG_INFO, "Message received: topic: %s message value: %s topic value: %s",
-		topic->name, messageValue, topic->value);
+
+char comp[20];
+char message[1023];
+char buffermessage[1023];
+char buffertopicmessage[1023];
+void curl_string_message_format(struct topic *topic,struct sender *sender,char *messageValue,char *comp)
+{	
+	snprintf(buffermessage,100,"%s",messageValue);
+	snprintf(buffertopicmessage,100,"%s",topic->value);
+	syslog(LOG_INFO, "Message received: topic: %s message value: %s topic value: %s",topic->name, buffermessage, buffertopicmessage);
 	sprintf(message, "Subject: Received message from: %s\r\nTopic value is == %s\r\nMessage value is == %s\r\n key: %s\r\n Message value %s Topic value",
-		topic->name, topic->value, messageValue, topic->key, comp);
+		topic->name, buffertopicmessage, buffermessage, topic->key, comp);
 	curl_message(topic->recEmail, sender, message);
 }
 void curl_decimal_message_format(struct topic *topic,struct sender *sender,int messageValue, int topicValue,char *comp)
 {
-
 	syslog(LOG_INFO, "Message received: topic: %s message value: %d topic value: %d",
-		topic->name, messageValue, topicValue); 
-	sprintf(message, "Subject: Received message from: %s\r\nTopic value is == %d\r\nMessage value is == %d\r\n key: %s\r\n Message value %s Topic value",
+	topic->name, messageValue, topicValue); 
+	sprintf(message,"Subject: Received message from: %s\r\nTopic value is == %d\r\nMessage value is == %d\r\n key: %s\r\n Message value %s Topic value\r\n",
 		topic->name, topicValue, messageValue, topic->key,comp);
 	curl_message(topic->recEmail, sender, message);
 }
@@ -43,7 +46,7 @@ void Uci_string_Comparison_Check(char *messageValue, struct topic *topic, struct
 				}
 				break;
 
-			case NOT_EQUAL: // !=
+			case NOTEQUAL: // !=
 				if(value != 0){
 					sprintf(comp,"NOT_EQUAL");
 					curl_string_message_format(topic,sender,messageValue,comp);
@@ -61,14 +64,12 @@ void Uci_string_Comparison_Check(char *messageValue, struct topic *topic, struct
 void Uci_decimal_Comparison_Check(int messageValue, int topicValue, struct topic *topic, struct sender *sender )
 {	
 		switch(atoi(topic->Comparison)){
-			case MORE_EQUAL: // >=
+			case MOREEQUAL: // >=
 				if(messageValue >= topicValue){
 					sprintf(comp,"MORE_EQUAL");
 					curl_decimal_message_format(topic,sender,messageValue,topicValue,comp);
 				}
-				break;
-
-			
+			break;
 			case EQUAL: // ==
 				if(messageValue == topicValue){
 					sprintf(comp,"EQUAL");
@@ -76,14 +77,14 @@ void Uci_decimal_Comparison_Check(int messageValue, int topicValue, struct topic
 				}
 				break;
 
-			case NOT_EQUAL: // !=
+			case NOTEQUAL: // !=
 				if(messageValue != topicValue){
 					sprintf(comp,"NOT_EQUAL");
 					curl_decimal_message_format(topic,sender,messageValue,topicValue,comp);
 				}
 				break;
 
-			case LESS_EQUAL: // <=
+			case LESSEQUAL: // <=
 				if(messageValue <= topicValue){
 					sprintf(comp,"LESS_EQUAL");
 					curl_decimal_message_format(topic,sender,messageValue,topicValue,comp);
@@ -132,7 +133,7 @@ void uci_Check_Type(struct topic *topic, struct sender *sender, char *messageVal
 				break;
 			}
                 	Uci_string_Comparison_Check(messageValue,topic,sender);
-					break;
+		break;
 		
 		case DECIMAL:
 				if(topicPtr == topic->value){
@@ -149,7 +150,7 @@ void uci_Check_Type(struct topic *topic, struct sender *sender, char *messageVal
 					break;
 				}
                     Uci_decimal_Comparison_Check(messageNum,topicNum,topic,sender);
-					break;
+		break;
 
 		default:
 			syslog(LOG_ERR, "Wrong type specified(STRING OR DECIMAL)");

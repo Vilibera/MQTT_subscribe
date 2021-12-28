@@ -1,11 +1,12 @@
 #define CONFIG "m_conf"
 
+#define LESSEQUAL 4
+#define MOREEQUAL 1
 #define EQUAL 2
-#define NOT_EQUAL 3
+#define NOTEQUAL 3
 #define LESS 5
 #define MORE 6
-#define LESS_EQUAL 4
-#define MORE_EQUAL 1
+
 #define STRING 1
 #define DECIMAL 2
 
@@ -16,8 +17,6 @@ struct sender{
 	char *smtpPort;
 	char *smtpIP;
 };
-
-
 
 struct topic {
 	char *name;

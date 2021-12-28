@@ -8,12 +8,12 @@
 #include <uci.h>
 #include <argp.h>
 #include <curl/curl.h>
+#include "uci_check.h"
+#include "uci_alloc.h"
 #include <json-c/json.h>
 #include "mqtt_functions.h"
 #include "curl_message.h"
 #include "StructCurlMessage.h"
-#include "uci_check.h"
-#include "uci_alloc.h"
 #include "StructAddress.h"
 #include "ComparisonMessage.h"
 
@@ -93,16 +93,12 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 		return;
 	}
 
-	syslog(LOG_INFO, "Topic parsed succesfully");
-
 	parsed_json = json_tokener_parse((char*)msg->payload);
 	if (parsed_json == NULL){
 		syslog(LOG_ERR, "Failed to parse JSON message");
 		syslog(LOG_INFO, "Message received: topic: %s message: %s", msg->topic, (char*)msg->payload);
 		return;
 	}
-
-	syslog(LOG_INFO, "JSON parsed succesfully");
 
 	json_object_object_get_ex(parsed_json, topic.key, &object_json);	
 	if (object_json ==NULL){
@@ -111,11 +107,10 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 		return;
 	}
 
-	syslog(LOG_INFO, "JSON get succesfully");
-
 	messageValue = json_object_get_string(object_json);
 	if(messageValue == NULL){
 			syslog(LOG_ERR,"Message is empty");
+			syslog(LOG_INFO, "Message received: topic: %s, key: %s, message: %s", msg->topic,topic.key, (char*)msg->payload);
 			return;
 	}
 	uci_Check_Type(&topic, &sender, messageValue);
@@ -131,7 +126,6 @@ void mqtt_init(struct mosquitto *mosq, struct Connection con, struct uci_package
 		syslog(LOG_ERR, "Sender parsed failed");
 		CleanAll(1);
 	}
-	syslog(LOG_INFO, "Sender parsed succesfully");
     mosquitto_lib_init();
 	mqtt_new(&mosq);
     mosquitto_message_callback_set(mosq, on_message);

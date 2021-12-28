@@ -37,20 +37,21 @@ static size_t payload_source(char *ptr, size_t size, size_t nmemb, void *userp)
 }
  
 void getUrl(char *ip, char *port , char **ptr){
-	char url[255];
+	char url[1024];
 	char *checkaddress = NULL;
 
-	if(port != NULL){
-		sprintf(url, "%s:%s",ip, port);
-		checkaddress = strstr(url, "smtp://");
-		if(!checkaddress){
-			sprintf(url, "smtp://%s:%s", ip, port);
-		}
+	if(port != NULL || ip != NULL){
+		sprintf(url, "smtp://%s:%s",ip, port);
+		// checkaddress = strstr(url, "smtp:/");
+		// if(!checkaddress){
+		// 	sprintf(url, "smtp://%s:%s", ip, port);
+		// }
 	}
 	else{
+		syslog(LOG_ERR,"Wrong url address");
 		checkaddress = strstr(ip, "smtp://");
 		if(!checkaddress){
-			sprintf(url, "smtp://%s", ip);
+			sprintf(url, "smtp://%s:%s", ip, port);
 		}
 	}
 	*ptr = url;
@@ -59,18 +60,19 @@ void getUrl(char *ip, char *port , char **ptr){
 
 void curl_message(char *recipient,struct sender *sen, char *message)
  {	
-
+	char errbuf[CURL_ERROR_SIZE];
  	payload_text = NULL;
 	CURL *curl;
-
+ 	errbuf[0] = 0;
+ 
 	CURLcode res = CURLE_OK;
 	struct curl_slist *recipients = NULL;
 	struct upload_status upload_ctx = { 0 };
 	char *url = NULL;
 	curl = curl_easy_init();
 	if(curl){
-	
-	
+		CURL *handle = curl_easy_init();
+		char error[CURL_ERROR_SIZE]; 
 		payload_text = message;
 		getUrl(sen->smtpIP,sen->smtpPort,&url);
 		
@@ -83,21 +85,31 @@ void curl_message(char *recipient,struct sender *sen, char *message)
 		recipients = curl_slist_append(recipients,recipient);
 		curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, recipients);
 
-
+	
 		curl_easy_setopt(curl, CURLOPT_READFUNCTION, payload_source);
 		curl_easy_setopt(curl, CURLOPT_READDATA, &upload_ctx);
 		curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
 
+		
+
 		curl_easy_setopt(curl, CURLOPT_USERNAME, sen->username);
 		curl_easy_setopt(curl, CURLOPT_PASSWORD, sen->password);
-        
+
+		CURLcode ret = curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, error);
+
+		
 		res = curl_easy_perform(curl);
-		if(res != CURLE_OK)
-			syslog(LOG_ERR, "curl_easy_perform() failed: %s", curl_easy_strerror(res));
+		if(res != CURLE_OK){
+			syslog(LOG_ERR,"curl_easy_perform() failed: %s", curl_easy_strerror(res));
+			size_t len = strlen(errbuf);
+   			syslog(LOG_ERR, "\nlibcurl: (%d) ", res);
+    		if(len)
+      			syslog(LOG_ERR, "%s%s", errbuf,((errbuf[len - 1] != '\n') ? "\n" : ""));
+		}
+			
 		else
-			syslog(LOG_INFO, "Message sent to email: %s", recipient);
+			syslog(LOG_INFO, "Message sent to email: %s\r", recipient);
 		curl_slist_free_all(recipients);
- 
 		curl_easy_cleanup(curl);
 	}
 }
