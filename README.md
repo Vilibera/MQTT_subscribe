@@ -37,5 +37,7 @@ If all went well go to Services/MQTT/Subscriber and fill all the fields:
 
 # How use program
 1: Firstly connect to device terminal with ssh( For example ssh@(your router ip address)
+
 2: If connected write mosquitto_program -h (device ip address) -p(port(default is 1883))
+
 3: Go to pc terminal and write mosquitto_pub -h(device where is a broker ip address) -p(port equal as broker) -t(topic name) -m(message value JSON format(for example -m '{"key":"message value"}'
