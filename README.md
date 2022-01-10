@@ -30,7 +30,9 @@ If all went well go to Services/MQTT/Subscriber and fill all the fields:
  
  8: Comparison( If you select equal comparison and type decimal write in value field for example 10. And when your publish message and topic message will be equal
  this program will sent email letter to yours email address)
+ 
  9: Value(Topic value)
+ 
  10: Recipients email address( In this field write email where program should sent message about program) 
  
  Program configuration is done
